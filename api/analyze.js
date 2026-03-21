@@ -27,12 +27,7 @@ export default async function handler(req) {
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash
-      contents: {
-        parts: [
-          {
-            inlineData: {
-              data: data.image.split(',')[1],
+      model: 'gemini-2.5-flash',')[1],
               mimeType: data.image.match(/data:(.*?);base64/)?.[1] || 'image/jpeg'
             }
           },
@@ -76,3 +71,4 @@ RULES
     });
   }
 }
+
