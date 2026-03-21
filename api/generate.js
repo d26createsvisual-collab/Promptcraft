@@ -29,7 +29,7 @@ export default async function handler(req) {
     const formattedAnswers = data.answers?.map((a) => `- ${a.question}: ${Array.isArray(a.answer) ? a.answer.join(', ') : a.answer}`).join('\n') || 'None';
 
     const response = await ai.models.generateContent({
-      model: 'gemini-2.0-flash',
+      model: 'gemini-1.5-flash',
       contents: `You are an expert software architect and UI/UX designer. 
 Generate a highly detailed, structured prompt that the user can copy and paste into an AI coding tool to build their app.
 
