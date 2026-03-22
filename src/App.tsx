@@ -155,6 +155,42 @@ const EXAMPLE_SETS: Record<string, { tag: string, text: string }[]> = {
 };
 
 // --- Helpers ---
+const compressImage = (base64Str: string): Promise<string> => {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.src = base64Str;
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      let width = img.width;
+      let height = img.height;
+      const maxSize = 800;
+
+      if (width > height) {
+        if (width > maxSize) {
+          height = Math.round((height * maxSize) / width);
+          width = maxSize;
+        }
+      } else {
+        if (height > maxSize) {
+          width = Math.round((width * maxSize) / height);
+          height = maxSize;
+        }
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', 0.7));
+      } else {
+        resolve(base64Str);
+      }
+    };
+    img.onerror = () => resolve(base64Str);
+  });
+};
+
 const getToolRecommendations = (data: ProjectData): ToolRecommendation[] => {
   const isWeb = data.techStack?.toLowerCase().includes('react') || data.techStack?.toLowerCase().includes('next');
   const isMobile = data.techStack?.toLowerCase().includes('mobile');
@@ -320,7 +356,8 @@ export default function App() {
     setIsGenerating(true);
     setError(null);
     try {
-      const data: ProjectData = { mode: 'SCREENSHOT', image, imageContext };
+      const compressedImage = await compressImage(image);
+      const data: ProjectData = { mode: 'SCREENSHOT', image: compressedImage, imageContext };
       const prompt = await generatePrompt(data);
       setGeneratedPromptText(prompt);
       setRecommendedTools(getToolRecommendations(data));
