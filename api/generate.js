@@ -53,7 +53,7 @@ RULES
 [4-5 strict constraints as bullet points]`;
 
     const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
+      model: 'gemini-3.1-flash-lite-preview',
       contents: prompt,
     });
 
