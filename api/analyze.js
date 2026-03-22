@@ -16,7 +16,7 @@ export default async function handler(req) {
   }
 
   if (req.method !== 'POST') {
-    return new Response(JSON.stringify({ error: 'Method Not Allowed' }), { 
+    return new Response(JSON.stringify({ error: 'Method Not Allowed' }), {
       status: 405,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
@@ -27,42 +27,49 @@ export default async function handler(req) {
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
     const response = await ai.models.generateContent({
-      model: 'gemini-3.1-flash-lite-preview',')[1],
-              mimeType: data.image.match(/data:(.*?);base64/)?.[1] || 'image/jpeg'
-            }
-          },
-          {
-            text: `You are an expert frontend engineer and UI/UX designer.
-Analyze this screenshot and generate a detailed prompt to recreate it or build upon it.
-User context/instructions: ${data.imageContext || 'None provided.'}
+      model: 'gemini-3.1-flash-lite-preview',
+      contents: [
+        {
+          parts: [
+            {
+              inlineData: {
+                data: data.image.replace(/^data:image\/\w+;base64,/, ''),
+                mimeType: data.image.match(/data:(.*?);base64/)?.[1] || 'image/jpeg'
+              }
+            },
+            {
+              text: `You are an expert frontend engineer and UI/UX designer. Analyze this screenshot and generate a detailed prompt to recreate it or build upon it.
 
-Format the output EXACTLY with these uppercase headings (no markdown formatting for headings):
+Format the output EXACTLY with these uppercase headings:
+
 ANALYSIS
-[Detailed breakdown of the layout, components, and visual hierarchy seen in the image]
+[Describe the layout, color scheme, typography, and key UI components you see]
 
 CONCEPT
-[What this interface represents and its primary function]
+[2-3 sentences describing what this interface is and its purpose]
 
 DESIGN
-[Extract the design system: colors (estimate hex codes), typography style, spacing patterns, border radius, shadows]
+[Detailed design system: colors, fonts, spacing, border radius, shadows]
 
 CORE FEATURES
-[Numbered list of the interactive elements and features visible or implied]
+[Numbered list of key features visible in the screenshot]
 
 TECH STACK
-[Recommended modern frontend stack to build this (e.g., React, Tailwind, specific UI libraries)]
+[Recommended tech stack to build this]
 
 RULES
-[4-5 strict constraints for recreating this accurately (e.g., Pixel-perfect spacing, Responsive behavior)]`
-          }
-        ]
-      }
+[4-5 specific constraints to match this design faithfully]`
+            }
+          ]
+        }
+      ]
     });
 
-    return new Response(JSON.stringify({ prompt: response.text?.trim() || 'Failed to generate prompt.' }), {
+    return new Response(JSON.stringify({ prompt: response.text?.trim() || 'Failed to analyze screenshot.' }), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
+
   } catch (error) {
     console.error("Error analyzing screenshot:", error);
     return new Response(JSON.stringify({ error: "Failed to analyze screenshot" }), {
@@ -71,5 +78,3 @@ RULES
     });
   }
 }
-
-
