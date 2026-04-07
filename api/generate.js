@@ -10,14 +10,13 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 };
 
-async function generateWithRetry(ai, payload, maxRetries = 3) {
+async function generateWithRetry(ai, payload, maxRetries = 2) {
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
       return await ai.models.generateContent(payload);
     } catch (err) {
       if (err.status === 503 && attempt < maxRetries - 1) {
-        const delay = Math.pow(2, attempt) * 1000; // 1s, 2s, 4s
-        await new Promise(res => setTimeout(res, delay));
+        await new Promise(res => setTimeout(res, 500));
       } else {
         throw err;
       }
@@ -46,7 +45,7 @@ export default async function handler(req) {
     ).join('\n') || 'None';
 
     const response = await generateWithRetry(ai, {
-      model: 'gemini-3-flash-preview',  // ← correct model per official docs
+      model: 'gemini-3-flash-preview',
       contents: `You are an expert software architect and UI/UX designer. 
 Generate a highly detailed, structured prompt that the user can copy and paste into an AI coding tool to build their app.
 
